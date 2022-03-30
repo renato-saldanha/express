@@ -1,9 +1,36 @@
 const express = require("express");
 const app = express();
+const bodyParser = require("body-parser");
 
+const saudacao = require("./saudacaoMid");
+const usuarioAPI = require("./api/Usuario");
+
+require("./api/Produto")(app, "Oi Renatinho!");
+// OU 
+//const produtoAPI = require("./api/Produto");
+//produtoAPI(app, "Oi Renatinho!");
+
+app.post('/usuario', usuarioAPI.salvar);
+app.get('/usuario', usuarioAPI.obter);
+
+
+app.use(saudacao("Renato"));
+
+app.use(bodyParser.text());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.post("/corpo", (req, res) => {
+  // let corpo = "";
+  // req.on("data", (parte) => (corpo += parte));
+  // req.on("end", () => res.send(corpo));
+
+  res.send(req.body);
+});
 
 //caso retire o primeiro parametro, todas as requisições passarão por essa função
-app.use((req, res, next) => { //função middleware
+app.use((req, res, next) => {
+  //função middleware
   console.log("Antes!");
   next(); //chama a proxima requisição da mesma URL
 });
@@ -34,16 +61,33 @@ app.use("/opa", (req, res, next) => {
   ]);
 
   console.log("Durante!");
-  next(); 
+  next();
 });
 
-app.get('/opa', (req, res) => {  //POST
+app.get("/cliente/relatorio", (req, res) => {
+  res.send(
+    `Cliente relatório: completo = ${req.query.completo} ano = ${req.query.ano}`
+  );
+});
+
+app.get("/cliente/:id", (req, res, next) => {
+  //POST
   // res.send("<b>Opa!</b>!");
-  console.log("Depois!");  
-});
+  let nome;
+  switch (parseInt(req.params.id)) {
+    case 1:
+      nome = "Renato";
+      break;
+    case 2:
+      nome = "João";
+      break;
+    case 3:
+      nome = "Patrick";
+      break;
+  }
 
-// app.all('/opa', (req, res) => {  //passa geral
-//   res.send("<b>Opa!</b>!");
-// });
+  res.send(`Olá ID: ${nome}`);
+  next();
+});
 
 app.listen(3000, () => console.log("Executando..."));
